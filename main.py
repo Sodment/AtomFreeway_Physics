@@ -8,14 +8,24 @@ import _collections
 
 
 def rysuj_ramke(surface, szerokosc , wysokosc):
-    game.draw.rect(surface, (140, 163, 163), (30, 30, szerokosc, wysokosc), 5)
+    ramka = game.draw.rect(surface, (140, 163, 163), (30, 30, szerokosc, wysokosc), 5)
     surface.fill((198, 210, 209), (35, 35, szerokosc-10, wysokosc-10))
-
+    return ramka
 
 def rysuj_okno(szerokosc, wysokosc):
     screen = game.display.set_mode((szerokosc, wysokosc))
     screen.fill((72, 79, 79))
     return screen
+
+def rysuj_atomy(surface, ramka, wysokosc, szerokosc):
+    promien = 15
+    for i in range(szerokosc):
+        for j in range(wysokosc):
+            if game.Rect.collidepoint(ramka, i, j) and i % 100 == 0 and j % 100 == 0:
+                game.draw.circle(surface, (157, 123, 133), (i, j), promien)
+            else:
+                continue
+
 
 
 def main():
@@ -23,8 +33,9 @@ def main():
     screen = rysuj_okno(1280, 820)
     font = game.freetype.SysFont(None, 32)
     clock = game.time.Clock()
-    rysuj_ramke(screen, 580, 720)
+    ramka = rysuj_ramke(screen, 580, 720)
     slider = pygame_widgets.Slider(screen, 100, 100, 800, 40, min=0, max=99, step=1)
+    rysuj_atomy(screen, ramka, 1280, 820)
 
 
 ### Wychodzenie z gry ###
@@ -33,8 +44,8 @@ def main():
         for e in events:
             if e.type == game.QUIT:
                 return 0
-        slider.listen(events)
-        slider.draw()
+        #slider.listen(events)
+        #slider.draw()
         game.display.update()
 
 if __name__ == '__main__':
