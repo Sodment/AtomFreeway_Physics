@@ -36,12 +36,20 @@ class Container(pygame.sprite.Sprite):
 
     def __init__(self, width, height):
         pygame.sprite.Sprite.__init__(self)
+        self.width = width
+        self.height = height
         self.image = pygame.Surface((width, height))
         self.image.fill((198, 210, 209))
         pygame.draw.rect(self.image, (140, 163, 163), ((0, 0), (width, height)), 10)
         self.original_image = self.image
         self.rect = self.image.get_rect()
         self.rect.topleft = (30, 30)
+
+class Tilemap(pygame.sprite.Sprite):
+
+    def __init__(self, container, atom_radius):
+        self.mapwidth = container.width//atom_radius
+        self.mapheight = container.height//atom_radius
 
 
 
