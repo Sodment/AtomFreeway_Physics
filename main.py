@@ -43,54 +43,20 @@ class Atomic_Container(pygame.sprite.Sprite):
         for atom in self.atoms:
             atom.position += atom.speed
 
-    def collision_with_container(self):
+    def collisions(self, container):
         for atom in self.atoms:
-            if atom.position.x < atom.radius or atom.x > 600 - atom.radius:    atom.speed.x *= -1
-            if atom.position.y < atom.radius or atom.y > 720 - atom.radius:    atom.speed.y *= -1
-        for atom1 in self.atoms:
-            for atom2 in self.atoms:
-                if atom1 != atom2:
-                    if math.sqrt(((atom1.position.x - atom2.position.x) ** 2) + ((atom1.position.y - atom2.position.y) ** 2)) <= (atom1.radius + atom2.radius):
-                        self.circle_collide(atom1, atom2)
+            if atom.position.x < atom.radius or atom.position.x > container.width - atom.radius:    atom.speed.x *= -1
+            if atom.position.y < atom.radius or atom.position.y > container.height - atom.radius:    atom.speed.y *= -1
+        for i in range(0, len(self.atoms)):
+            for j in range(i, len(self.atoms)):
+                atom_1 = self.atoms[i]
+                atom_2 = self.atoms[j]
+                if atom_1 != atom_2 and atom_1.position.distance_to(atom_2.position) <= (2*atom_1.radius):
+                    atom_1.position += Vector(2 * atom_1.radius - atom_1.position.distance_to(atom_2.position))
+                    atom_1.speed = atom_1.speed.reflect(atom_1.speed)
+                    atom_2.speed = atom_2.speed.reflect(atom_2.speed)
 
-    def circle_collide(atom1, atom2):
-        atom_1_velocity = math.sqrt((atom1.speed.x**2)+(atom1.speed.y**2))
-        x_diff = -(atom1.position.x-atom2.position.x)
-        y_diff = -(atom1.position.y-atom2.position.y)
-        if x_diff > 0:
-            if y_diff > 0:
-                angle = math.degrees(math.atan(y_diff/x_diff))
-                x_speed = -atom_1_velocity*math.cos(math.radians(angle))
-                y_speed = -atom_1_velocity*math.sin(math.radians(angle))
-            elif y_diff < 0:
-                angle = math.degrees(math.atan(y_diff/x_diff))
-                x_speed = -atom_1_velocity*math.cos(math.radians(angle))
-                y_speed = -atom_1_velocity*math.sin(math.radians(angle))
-        elif x_diff < 0:
-            if y_diff > 0:
-                angle = 180 + math.degrees(math.atan(y_diff/x_diff))
-                x_speed = -atom_1_velocity*math.cos(math.radians(angle))
-                y_speed = -atom_1_velocity*math.sin(math.radians(angle))
-            elif y_diff < 0:
-                angle = -180 + math.degrees(math.atan(y_diff/x_diff))
-                x_speed = -atom_1_velocity*math.cos(math.radians(angle))
-                y_speed = -atom_1_velocity*math.sin(math.radians(angle))
-        elif x_diff == 0:
-            if y_diff > 0:
-                angle = -90
-            else:
-                angle = 90
-            x_speed = atom_1_velocity*math.cos(math.radians(angle))
-            y_speed = atom_1_velocity*math.sin(math.radians(angle))
-        elif y_diff == 0:
-            if x_diff < 0:
-                angle = 0
-            else:
-                angle = 180
-            x_speed = atom_1_velocity*math.cos(math.radians(angle))
-            y_speed = atom_1_velocity*math.sin(math.radians(angle))
-        atom1.speed.x = x_speed
-        atom1.speed.y = y_speed
+
 
 class Atom():
 
@@ -119,7 +85,7 @@ def main():
     all_sprites = pygame.sprite.Group()
     container = Container(600, 720)
     atom_container = Atomic_Container()
-    atom_container.instantia_atoms(20)
+    atom_container.instantia_atoms(100)
     all_sprites.add(container)
 
     ### GAME LOOP ###
@@ -129,6 +95,7 @@ def main():
             if e.type == pygame.QUIT:
                 return 0
         atom_container.move_atom()
+        atom_container.collisions(container)
         atom_container.draw_atoms(container.image)
         all_sprites.update()
         all_sprites.draw(DISPLAY)
