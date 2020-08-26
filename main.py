@@ -227,7 +227,7 @@ def Simulation(fps, number_of_atoms):
 def main():
     global number_of_atoms, mean_freeway, freq_of_collisons
     for fps in range(20, 110, 20):
-        for atoms in range(30, 200, 10):
+        for atoms in range(30, 211, 20):
                 number_of_atoms.append((atoms))
                 Simulation(fps, atoms)
                 print(mean_freeway, number_of_atoms)
