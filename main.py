@@ -6,11 +6,13 @@ import time
 import sys
 import _collections
 import random
+import matplotlib.pyplot as plt
+import numpy as np
 Vector = pygame.math.Vector2
 
 # initialize pygame
 pygame.init()
-FPS = 30  # frames per second
+FPS = 100  # frames per second
 fps_clock = pygame.time.Clock()
 # set up the window
 WIDTH = 1280
@@ -27,7 +29,12 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 free_way = 0
-path = []
+previous_time = time.perf_counter()
+collisions = 0
+mean_freeway = []
+freq_of_collisons = []
+number_of_atoms = []
+number_of_ticks = []
 
 class Atomic_Container(pygame.sprite.Sprite):
     def __init__(self, basic_atom):
@@ -118,14 +125,16 @@ class Atomic_Container(pygame.sprite.Sprite):
         atom_1.speed.y = y_speed
 
     def collision_wth_atoms_v2(self):
+        global free_way
+        global collisions
         for atom_1 in self.atoms:
             for atom_2 in self.atoms:
-                if atom_1 != atom_2:
+                if not(atom_1 is atom_2):
                     if math.sqrt(((atom_1.position.x - atom_2.position.x) ** 2) + ((atom_1.position.y - atom_2.position.y) ** 2)) <= (atom_1.radius + atom_2.radius):
-                        if atom_1 == self.atoms[-1] or atom_2 == self.atoms[-1]:
-                            self.calculate_clear_path(self.atoms[-1])
+                        if atom_1 is self.atoms[-1]:
+                            collisions += 1
+                            self.calculate_freeway(self.atoms[-1])
                         self.collision_wth_atoms_v2_utility(atom_1, atom_2)
-
 
     def collision_with_container(self, container):
         for atom in self.atoms:
@@ -134,16 +143,13 @@ class Atomic_Container(pygame.sprite.Sprite):
             if atom.position.y <= atom.radius or atom.position.y >= container.height - atom.radius:
                 atom.speed.y *= -1
 
-    def calculate_clear_path(self, atom):
-        global free_way
-        path.append(atom.position)
-        print(path)
-        if len(path) >= 2:
-            vector_1 = path.pop(0)
-            vector_2 = path[-1]
-            free_way += math.sqrt((vector_1.x - vector_2.x)**2 + (vector_1.y - vector_2.y)**2)
-        print(free_way)
-
+    def calculate_freeway(self, atom):
+        global  free_way
+        global previous_time
+        global collisions
+        current_time = time.perf_counter()
+        free_way += ((atom.speed * (current_time-previous_time)).length())
+        previous_time = time.perf_counter()
 
 
 class Atom():
@@ -175,32 +181,48 @@ class Container(pygame.sprite.Sprite):
         self.rect.topleft = (30, 30)
 
 
-
-
-def main():
+def Simulation(fps, number_of_atoms):
+    global mean_freeway, freq_of_collisons
     all_sprites = pygame.sprite.Group()
     basic_atom = Atom(10, 1)
-    container = Container(80*basic_atom.radius, 80*basic_atom.radius)
+    container = Container(80 * basic_atom.radius, 80 * basic_atom.radius)
     atom_container = Atomic_Container(basic_atom)
-    atom_container.instantia_atoms(100)
+    atom_container.instantia_atoms(number_of_atoms)
     all_sprites.add(container)
+    t0 = time.perf_counter()
 
     ### GAME LOOP ###
     while True:
         events = pygame.event.get()
         for e in events:
             if e.type == pygame.QUIT:
-                return 0
+                sys.exit()
         atom_container.move_atom()
-        #atom_container.collision_with_atoms()
-        #atom_container.print_atoms_position()
         atom_container.collision_wth_atoms_v2()
         atom_container.collision_with_container(container)
         atom_container.draw_atoms(container.image)
         all_sprites.update()
         all_sprites.draw(DISPLAY)
         pygame.display.update()
-        fps_clock.tick(FPS)
+        fps_clock.tick(fps)
+        if  time.perf_counter() - t0 > 10:
+            try:
+                mean_freeway.append(free_way / collisions)
+            except ZeroDivisionError:
+                mean_freeway.append(0)
+            freq_of_collisons.append(collisions / time.perf_counter())
+            return 0
+
+def main():
+    for fps in range(20, 70, 20):
+        for atoms in range(10, 300, 10):
+                number_of_atoms.append((atoms))
+                number_of_ticks.append((fps))
+                Simulation(fps, atoms)
+                print(mean_freeway, number_of_atoms)
+                plt.plot(number_of_atoms, mean_freeway)
+                #plt.plot(number_of_atoms, freq_of_collisons)
+                plt.show()
 
 if __name__ == '__main__':
     main()
