@@ -96,6 +96,7 @@ class Atomic_Container(pygame.sprite.Sprite):
         x_diff = -(atom_1.position.x - atom_2.position.x)
         ### Roznica odlegosci pomiedzy srodkami atomu na osi Y
         y_diff = -(atom_1.position.y - atom_2.position.y)
+        x_speed, y_speed = 0, 0
         if x_diff > 0:
             ### Kat zderzenia pomiedzy atomami wylicznay za pomoca tangensa katow pomiedzy roznicami w osiach X i Y
             angle = math.degrees(math.atan(y_diff / x_diff))
@@ -167,7 +168,7 @@ class Atom():
         self.radius = radius
         self.mass = mass
         self.position = Vector(random.randint(radius, 800-radius), random.randint(radius, 800-radius))
-        self.speed = Vector(2*(random.random()+2.0), 2*(random.random()+2.0))
+        self.speed = Vector(2*(random.randrange(-7, 7)), 2*(random.randrange(-7, 7)))
 
 ''' Klasa tworzaca specjalny atom'''
 class SpecialAtom(Atom):
@@ -216,7 +217,7 @@ def Simulation(fps, number_of_atoms):
         all_sprites.draw(DISPLAY)
         pygame.display.update()
         fps_clock.tick(fps)
-        if  time.perf_counter() - t0 > 10:
+        if time.perf_counter() - t0 > 10:
             try:
                 mean_freeway.append(free_way / collisions)
             except ZeroDivisionError:
@@ -225,12 +226,14 @@ def Simulation(fps, number_of_atoms):
             return 0
 
 def main():
-    global number_of_atoms, mean_freeway, freq_of_collisons
+    global number_of_atoms, mean_freeway, freq_of_collisons, collisions, free_way
     for fps in range(20, 110, 20):
         for atoms in range(30, 211, 20):
                 number_of_atoms.append((atoms))
                 Simulation(fps, atoms)
-                print(mean_freeway, number_of_atoms)
+                print(collisions, free_way)
+                collisions = 0
+                free_way = 0
         '''Rysowanie wykresu'''
         plt.figure(1)
         plt.plot(number_of_atoms, mean_freeway)
