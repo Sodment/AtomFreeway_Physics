@@ -63,33 +63,25 @@ class Atomic_Container(pygame.sprite.Sprite):
         for atom in self.atoms:
             atom.position += atom.speed
 
-    '''
-    Poprzednie kolizje, są bardziej oszczędne jeżeli chodzi o wykorzystanie CPU ale wymagaja dopracowania pod wzgledem aktualizacji polozenia przy wiekszych predkosciach
+
+    '''Bardziej oszczędna kolizja aczkolwiek jest wymaga tez dopracowann pod wzgledem wysokich predkosci atomow'''
     
     def collision_with_atoms(self):
+        global collisions, free_way
         for i in range(0, len(self.atoms)):
             for j in range(i, len(self.atoms)):
                 atom_1 = self.atoms[i]
                 atom_2 = self.atoms[j]
-                if atom_1 != atom_2 and atom_1.position.distance_to(atom_2.position) <= (2*atom_1.radius + 1):
-                    #self.move_atom_to_avoid_stacking(atom_1, atom_2)
-                    atom_1.speed = atom_1.speed.reflect(atom_1.speed)
-                    atom_2.speed = atom_2.speed.reflect(atom_2.speed)'''
-
-    '''def move_atom_to_avoid_stacking(self, atom_1, atom_2):
-        x_diff = atom_1.position.x - atom_2.position.x
-        y_diff = atom_1.position.y - atom_2.position.y
-        if x_diff > 0:
-            atom_1.position.x -= x_diff
-        elif x_diff < 0:
-            atom_1.position.x += x_diff
-        if y_diff > 0:
-            atom_1.position.y -= y_diff
-        elif y_diff < 0:
-            atom_1.position.y += y_diff'''
+                if atom_1 != atom_2 and math.sqrt(((atom_1.position.x - atom_2.position.x) ** 2) + ((atom_1.position.y - atom_2.position.y) ** 2)) <= (2*atom_1.radius + 1):
+                    if atom_1 is self.atoms[-1] or atom_2 is self.atoms[-1]:
+                        collisions += 1
+                        self.calculate_freeway(self.atoms[-1])
+                    tmp = atom_1.speed
+                    atom_1.speed = atom_2.speed
+                    atom_2.speed = tmp
 
     '''Funkcja pomocnicza do obliczen zwiazanych z idealnie sprezystym zderzeniem'''
-    def collision_wth_atoms_v2_utility(self, atom_1, atom_2):\
+    '''def collision_wth_atoms_v2_utility(self, atom_1, atom_2):\
         ### Dlugosc wektora predkosci pierwszego atomu ###
         atom_1_speed = math.sqrt((atom_1.speed.x ** 2) + (atom_1.speed.y ** 2))
         ### Roznica odlegosci pomiedzy srodkami atomu na osi X
@@ -126,7 +118,7 @@ class Atomic_Container(pygame.sprite.Sprite):
             x_speed = atom_1_speed * math.cos(math.radians(angle))
             y_speed = atom_1_speed * math.sin(math.radians(angle))
         atom_1.speed.x = x_speed
-        atom_1.speed.y = y_speed
+        atom_1.speed.y = y_speed'''
     '''Tutaj dzieje sie kolizja a wlasciwie sprawdzanie jej w ciaglej petli'''
     def collision_wth_atoms_v2(self):
         global free_way
@@ -147,9 +139,9 @@ class Atomic_Container(pygame.sprite.Sprite):
     '''Tutaj sprawdzana i obliczana jest kolizja ze scianami pojemnika'''
     def collision_with_container(self, container):
         for atom in self.atoms:
-            if atom.position.x <= atom.radius or atom.position.x >= container.width - atom.radius:
+            if atom.position.x + 3 <= atom.radius or atom.position.x >= container.width - atom.radius - 3:
                 atom.speed.x *= -1
-            if atom.position.y <= atom.radius or atom.position.y >= container.height - atom.radius:
+            if atom.position.y - 3 <= atom.radius or atom.position.y >= container.height - atom.radius + 3:
                 atom.speed.y *= -1
 
     '''Obliczanie drogi swobodnej za pomoca wektora predkosci oraz czasu przebytego od ostatniego zderzenia'''
@@ -168,7 +160,7 @@ class Atom():
         self.radius = radius
         self.mass = mass
         self.position = Vector(random.randint(radius, 800-radius), random.randint(radius, 800-radius))
-        self.speed = Vector(2*(random.randrange(-7, 7)), 2*(random.randrange(-7, 7)))
+        self.speed = Vector(2*(random.randrange(-5, 5)), 2*(random.randrange(-5, 5)))
 
 ''' Klasa tworzaca specjalny atom'''
 class SpecialAtom(Atom):
@@ -210,7 +202,8 @@ def Simulation(fps, number_of_atoms):
             if e.type == pygame.QUIT:
                 sys.exit()
         atom_container.move_atom()
-        atom_container.collision_wth_atoms_v2()
+        #atom_container.collision_wth_atoms_v2()
+        atom_container.collision_with_atoms()
         atom_container.collision_with_container(container)
         atom_container.draw_atoms(container.image)
         all_sprites.update()
@@ -222,7 +215,7 @@ def Simulation(fps, number_of_atoms):
                 mean_freeway.append(free_way / collisions)
             except ZeroDivisionError:
                 mean_freeway.append(0)
-            freq_of_collisons.append(collisions / time.perf_counter())
+            freq_of_collisons.append(collisions / (time.perf_counter()-t0))
             return 0
 
 def main():
