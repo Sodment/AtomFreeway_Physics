@@ -66,8 +66,13 @@ class Atomic_Container(pygame.sprite.Sprite):
 
     '''Bardziej oszczędna kolizja aczkolwiek jest wymaga tez dopracowann pod wzgledem wysokich predkosci atomow'''
     
-    def collision_with_atoms(self):
+    def collision_with_atoms(self, container):
         global collisions, free_way
+        for atom in self.atoms:
+            if atom.position.x + 3 <= atom.radius or atom.position.x >= container.width - atom.radius - 3:
+                atom.speed.x *= -1
+            if atom.position.y - 3 <= atom.radius or atom.position.y >= container.height - atom.radius + 3:
+                atom.speed.y *= -1
         for i in range(0, len(self.atoms)):
             for j in range(i, len(self.atoms)):
                 atom_1 = self.atoms[i]
@@ -81,7 +86,7 @@ class Atomic_Container(pygame.sprite.Sprite):
                     atom_2.speed = tmp
 
     '''Funkcja pomocnicza do obliczen zwiazanych z idealnie sprezystym zderzeniem'''
-    '''def collision_wth_atoms_v2_utility(self, atom_1, atom_2):\
+    def collision_wth_atoms_v2_utility(self, atom_1, atom_2):\
         ### Dlugosc wektora predkosci pierwszego atomu ###
         atom_1_speed = math.sqrt((atom_1.speed.x ** 2) + (atom_1.speed.y ** 2))
         ### Roznica odlegosci pomiedzy srodkami atomu na osi X
@@ -118,7 +123,7 @@ class Atomic_Container(pygame.sprite.Sprite):
             x_speed = atom_1_speed * math.cos(math.radians(angle))
             y_speed = atom_1_speed * math.sin(math.radians(angle))
         atom_1.speed.x = x_speed
-        atom_1.speed.y = y_speed'''
+        atom_1.speed.y = y_speed
     '''Tutaj dzieje sie kolizja a wlasciwie sprawdzanie jej w ciaglej petli'''
     def collision_wth_atoms_v2(self):
         global free_way
@@ -202,10 +207,11 @@ def Simulation(fps, number_of_atoms):
             if e.type == pygame.QUIT:
                 sys.exit()
         atom_container.move_atom()
-        #atom_container.collision_wth_atoms_v2()
-        atom_container.collision_with_atoms()
-        atom_container.collision_with_container(container)
         atom_container.draw_atoms(container.image)
+        #atom_container.collision_with_container(container)
+        #atom_container.collision_wth_atoms_v2()
+        atom_container.collision_with_atoms(container)
+        atom_container.move_atom()
         all_sprites.update()
         all_sprites.draw(DISPLAY)
         pygame.display.update()
