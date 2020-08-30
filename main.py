@@ -71,7 +71,7 @@ class Atomic_Container(pygame.sprite.Sprite):
         for atom in self.atoms:
             if atom.position.x + 3 <= atom.radius or atom.position.x >= container.width - atom.radius - 3:
                 atom.speed.x *= -1
-            if atom.position.y - 3 <= atom.radius or atom.position.y >= container.height - atom.radius + 3:
+            if atom.position.y + 3 <= atom.radius or atom.position.y >= container.height - atom.radius - 3:
                 atom.speed.y *= -1
         for i in range(0, len(self.atoms)):
             for j in range(i, len(self.atoms)):
@@ -206,11 +206,11 @@ def Simulation(fps, number_of_atoms):
         for e in events:
             if e.type == pygame.QUIT:
                 sys.exit()
+        atom_container.collision_with_atoms(container)
         atom_container.move_atom()
         atom_container.draw_atoms(container.image)
         #atom_container.collision_with_container(container)
         #atom_container.collision_wth_atoms_v2()
-        atom_container.collision_with_atoms(container)
         atom_container.move_atom()
         all_sprites.update()
         all_sprites.draw(DISPLAY)
