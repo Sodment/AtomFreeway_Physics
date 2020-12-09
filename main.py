@@ -5,7 +5,7 @@ import time
 import sys
 import random
 import matplotlib.pyplot as plt
-Vector = pygame.math.Vector2
+#Dupa
 
 # initialize pygame
 pygame.init()
@@ -85,7 +85,7 @@ class Atomic_Container(pygame.sprite.Sprite):
                     atom_1.speed = atom_2.speed
                     atom_2.speed = tmp
 
-    '''Funkcja pomocnicza do obliczen zwiazanych z idealnie sprezystym zderzeniem'''
+    '''Funkcja pomocnicza do obliczen zwiazanych z sprezystym zderzeniem'''
     def collision_wth_atoms_v2_utility(self, atom_1, atom_2):\
         ### Dlugosc wektora predkosci pierwszego atomu ###
         atom_1_speed = math.sqrt((atom_1.speed.x ** 2) + (atom_1.speed.y ** 2))
@@ -141,15 +141,12 @@ class Atomic_Container(pygame.sprite.Sprite):
                             self.calculate_freeway(self.atoms[-1])
                         self.collision_wth_atoms_v2_utility(atom_1, atom_2)
 
-    '''Tutaj sprawdzana i obliczana jest kolizja ze scianami pojemnika'''
     def collision_with_container(self, container):
         for atom in self.atoms:
             if atom.position.x + 3 <= atom.radius or atom.position.x >= container.width - atom.radius - 3:
                 atom.speed.x *= -1
             if atom.position.y - 3 <= atom.radius or atom.position.y >= container.height - atom.radius + 3:
                 atom.speed.y *= -1
-
-    '''Obliczanie drogi swobodnej za pomoca wektora predkosci oraz czasu przebytego od ostatniego zderzenia'''
     def calculate_freeway(self, atom):
         global  free_way
         global previous_time
@@ -158,7 +155,6 @@ class Atomic_Container(pygame.sprite.Sprite):
         free_way += ((atom.speed * (current_time-previous_time)).length())
         previous_time = time.perf_counter()
 
-''' Klasa sluzac do tworzenia nowych atomow'''
 class Atom():
 
     def __init__(self, radius, mass):
@@ -167,18 +163,16 @@ class Atom():
         self.position = Vector(random.randint(radius, 800-radius), random.randint(radius, 800-radius))
         self.speed = Vector(2*(random.randrange(-5, 5)), 2*(random.randrange(-5, 5)))
 
-''' Klasa tworzaca specjalny atom'''
 class SpecialAtom(Atom):
     def __init__(self, radius, mass):
         self.radius = radius
         self.mass = mass
         self.position = Vector(radius, radius)
         self.speed = Vector(2*(random.random()+2.0), 2*(random.random()+2.0))
-
-'''klasa odpowiedzialna za tworzenie,kolorowanie i pozycjonowanie pojemnika w ktorym lataja atomy'''
 class Container(pygame.sprite.Sprite):
 
     def __init__(self, width, height):
+        # Inicjalizacja "rysownika" sprietów
         pygame.sprite.Sprite.__init__(self)
         self.width = width
         self.height = height
@@ -189,7 +183,6 @@ class Container(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (240, 50)
 
-'''Symulacja'''
 def Simulation(fps, number_of_atoms):
     global mean_freeway, freq_of_collisons
     all_sprites = pygame.sprite.Group()
@@ -233,7 +226,6 @@ def main():
                 print(collisions, free_way)
                 collisions = 0
                 free_way = 0
-        '''Rysowanie wykresu'''
         plt.figure(1)
         plt.plot(number_of_atoms, mean_freeway)
         plt.suptitle("FPS =" + str(fps))
@@ -247,7 +239,7 @@ def main():
         plt.show()
         number_of_atoms = []
         mean_freeway = []
-        freq_of_collisons =[]
+        freq_of_collisons = []
 
 if __name__ == '__main__':
     main()
